@@ -43,6 +43,8 @@ const accessoriesTable = document.querySelector("#accessories");
 const linkAccessoryForm = document.querySelector("#link-accessory");
 const adminHistoryForm = document.querySelector("#admin-history-search");
 const adminHistoryTable = document.querySelector("#admin-history");
+const adminHistoryExportButton = document.querySelector("#admin-history-export");
+const adminArchiveTable = document.querySelector("#admin-archive-history");
 const adminChairHistoryForm = document.querySelector("#admin-chair-history-search");
 const adminChairHistoryTable = document.querySelector("#admin-chair-history");
 const adminAccessoryHistoryForm = document.querySelector("#admin-accessory-history-search");
@@ -107,6 +109,7 @@ const appState = {
     query: "",
   },
   history: [],
+  archivedHistory: {},
 };
 
 const accounts = [
@@ -138,11 +141,41 @@ function formatAccessoryId(prefix = "ACC-") {
 }
 
 function logEvent(message) {
+  const now = new Date();
   appState.history.unshift({
     message,
-    date: new Date().toLocaleString("fr-FR"),
+    date: now.toLocaleString("fr-FR"),
+    timestamp: now.toISOString(),
   });
-  appState.history = appState.history.slice(0, 50);
+  pruneHistory();
+}
+
+function formatArchiveKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function pruneHistory() {
+  const now = new Date();
+  const cutoff = new Date(now);
+  cutoff.setMonth(cutoff.getMonth() - 1);
+  const remaining = [];
+  const archived = appState.archivedHistory || {};
+
+  appState.history.forEach((entry) => {
+    const parsed = entry.timestamp ? new Date(entry.timestamp) : new Date(entry.date);
+    if (Number.isNaN(parsed.getTime()) || parsed >= cutoff) {
+      remaining.push(entry);
+    } else {
+      const key = formatArchiveKey(parsed);
+      if (!archived[key]) {
+        archived[key] = [];
+      }
+      archived[key].unshift(entry);
+    }
+  });
+
+  appState.history = remaining.slice(0, 200);
+  appState.archivedHistory = archived;
 }
 
 function getActorLabel() {
@@ -245,6 +278,7 @@ async function loadPersistedState() {
       // Ignore fetch errors to allow offline usage.
     }
   }
+  pruneHistory();
   await ensureAccountHashes();
   const session = loadSession();
   if (session) {
@@ -281,6 +315,7 @@ function seedData() {
   appState.accessorySequence = 1;
   appState.accessories = [];
   appState.history = [];
+  appState.archivedHistory = {};
 }
 
 function logHistory(chair, message) {
@@ -762,6 +797,53 @@ function renderAdminHistory() {
   }
 }
 
+function buildHistoryCsv(entries) {
+  const rows = [["date", "message"]];
+  entries.forEach((entry) => {
+    rows.push([entry.date || "", entry.message || ""]);
+  });
+  return rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(",")).join("\n");
+}
+
+function downloadCsv(filename, content) {
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function renderAdminArchiveHistory() {
+  if (!adminArchiveTable) return;
+  const archives = appState.archivedHistory || {};
+  const keys = Object.keys(archives).sort().reverse();
+  adminArchiveTable.innerHTML = keys
+    .map((key) => {
+      const count = archives[key]?.length || 0;
+      return `
+        <tr>
+          <td>${key}</td>
+          <td>${count}</td>
+          <td>
+            <button class="button button-secondary" data-export-archive="${key}">
+              Exporter
+            </button>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+  if (!keys.length) {
+    adminArchiveTable.innerHTML = `
+      <tr>
+        <td colspan="3" class="muted">Aucune archive disponible.</td>
+      </tr>
+    `;
+  }
+}
+
 function renderAdminChairHistory() {
   if (!adminChairHistoryTable) return;
   const query = appState.adminChairHistorySearch.query.toLowerCase();
@@ -848,6 +930,7 @@ function render() {
   renderAvailable();
   renderReservations();
   renderAdminHistory();
+  renderAdminArchiveHistory();
   renderAdminChairHistory();
   renderAdminAccessoryHistory();
   renderStats();
@@ -1348,6 +1431,21 @@ function handleAdminHistorySubmit(event) {
   renderAdminHistory();
 }
 
+function handleAdminHistoryExport() {
+  const csv = buildHistoryCsv(appState.history);
+  const filename = `logs-${formatArchiveKey(new Date())}.csv`;
+  downloadCsv(filename, csv);
+}
+
+function handleAdminArchiveAction(event) {
+  const button = event.target.closest("[data-export-archive]");
+  if (!button) return;
+  const key = button.dataset.exportArchive;
+  const entries = (appState.archivedHistory && appState.archivedHistory[key]) || [];
+  const csv = buildHistoryCsv(entries);
+  downloadCsv(`logs-${key}.csv`, csv);
+}
+
 function handleAdminChairHistorySubmit(event) {
   event.preventDefault();
   const formData = new FormData(event.target);
@@ -1478,8 +1576,10 @@ managerSearchForm?.addEventListener("submit", handleManagerSearchSubmit);
 stockSearchForm?.addEventListener("submit", handleStockSearchSubmit);
 searchForm?.addEventListener("submit", handleSearchSubmit);
 adminHistoryForm?.addEventListener("submit", handleAdminHistorySubmit);
+adminHistoryExportButton?.addEventListener("click", handleAdminHistoryExport);
 adminChairHistoryForm?.addEventListener("submit", handleAdminChairHistorySubmit);
 adminAccessoryHistoryForm?.addEventListener("submit", handleAdminAccessoryHistorySubmit);
+adminArchiveTable?.addEventListener("click", handleAdminArchiveAction);
 availableTable?.addEventListener("click", handleAvailableClick);
 
 seedData();

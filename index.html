@@ -264,6 +264,7 @@
               <input name="query" placeholder="Rechercher un événement" />
             </label>
             <button class="button button-secondary" type="submit">Filtrer</button>
+            <button class="button" type="button" id="admin-history-export">Exporter le mois courant</button>
           </form>
           <div class="table-wrapper">
             <table>
@@ -274,6 +275,21 @@
                 </tr>
               </thead>
               <tbody id="admin-history"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-subsection">
+          <h3>Archives mensuelles</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mois</th>
+                  <th>Entrées</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-archive-history"></tbody>
             </table>
           </div>
         </div>
