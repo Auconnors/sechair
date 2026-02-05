@@ -468,6 +468,7 @@ function renderInventory() {
                 .join("")}
             </select>
             <button class="button button-secondary" data-set-state="${chair.id}">Appliquer</button>
+            <button class="button button-secondary" data-remove-chair="${chair.id}">Supprimer</button>
           </div>
         `
         : showStockActions
@@ -1400,6 +1401,34 @@ function handleAvailableClick(event) {
 }
 
 function handleInventoryAction(event) {
+  const removeButton = event.target.closest("[data-remove-chair]");
+  if (removeButton) {
+    if (appState.role !== "gestionnaire") {
+      alert("Seul le gestionnaire peut supprimer un fauteuil.");
+      return;
+    }
+    const chairId = removeButton.dataset.removeChair;
+    const chairIndex = appState.chairs.findIndex((item) => item.id === chairId);
+    if (chairIndex >= 0) {
+      const chair = appState.chairs[chairIndex];
+      if (chair.state !== "disponible") {
+        alert("Impossible de supprimer un fauteuil qui n'est pas disponible.");
+        return;
+      }
+      appState.accessories.forEach((accessory) => {
+        if (accessory.assignedChairId === chair.id) {
+          accessory.assignedChairId = "";
+          accessory.state = "disponible";
+          logAccessoryHistory(accessory, "Délié du fauteuil supprimé");
+        }
+      });
+      logHistory(chair, "Supprimé par le gestionnaire");
+      appState.chairs.splice(chairIndex, 1);
+      logEvent(`Gestionnaire a supprimé le fauteuil ${chairId}.`);
+      render();
+    }
+    return;
+  }
   const applyButton = event.target.closest("[data-set-state]");
   if (applyButton) {
     const chairId = applyButton.dataset.setState;
