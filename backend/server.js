@@ -83,6 +83,6 @@ if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
 } else {
   app.listen(port, () => {
     console.log(`SeChair backend running on http://localhost:${port}`);
-    console.log(\"No SSL certificate found. Run `npm run generate-cert` in backend/ to enable HTTPS.\");
+    console.log("No SSL certificate found. Run npm run generate-cert in backend/ to enable HTTPS.");
   });
 }
