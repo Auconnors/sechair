@@ -69,7 +69,13 @@ app.put("/api/state", (req, res) => {
         res.status(500).json({ error: "Database error" });
         return;
       }
-      res.json({ ok: true });
+      db.run("VACUUM", (vacuumError) => {
+        if (vacuumError) {
+          res.status(500).json({ error: "Database vacuum error" });
+          return;
+        }
+        res.json({ ok: true });
+      });
     },
   );
 });

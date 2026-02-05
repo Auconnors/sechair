@@ -222,7 +222,7 @@
 
       <section class="card" data-role-only="admin">
         <h2>Administration des comptes</h2>
-        <p class="muted">Créez des comptes et attribuez les droits (gestionnaire, stock, utilisateur).</p>
+        <p class="muted">Créez des comptes et attribuez les droits (admin, gestionnaire, stock, utilisateur).</p>
         <form id="add-account" class="form-grid">
           <label>
             Nom du compte
@@ -232,6 +232,7 @@
             Rôle
             <select name="role" required>
               <option value="">Choisir</option>
+              <option value="admin">Admin</option>
               <option value="gestionnaire">Gestionnaire</option>
               <option value="stock">Stock</option>
               <option value="utilisateur">Utilisateur</option>

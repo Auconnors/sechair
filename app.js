@@ -142,6 +142,7 @@ function logEvent(message) {
     message,
     date: new Date().toLocaleString("fr-FR"),
   });
+  appState.history = appState.history.slice(0, 50);
 }
 
 function getActorLabel() {
@@ -1225,7 +1226,7 @@ function handleAccountAction(event) {
     const passwordInput = document.querySelector(`[data-password-input="${name}"]`);
     const account = accounts.find((item) => item.name === name);
     if (account) {
-      if (roleSelect?.value) {
+      if (roleSelect?.value && account.role !== "admin") {
         account.role = roleSelect.value;
         logEvent(`Admin a changé le rôle de ${account.name} en ${account.role}.`);
       }
@@ -1260,7 +1261,6 @@ function renderAccountOptions() {
   }
   if (accountsTable) {
     accountsTable.innerHTML = accounts
-      .filter((account) => account.role !== "admin")
       .map(
         (account) => `
           <tr>
@@ -1268,11 +1268,10 @@ function renderAccountOptions() {
             <td>
               <select data-role-select="${account.name}">
                 ${Object.entries(accountRoleLabels)
-                  .filter(([value]) => value !== "admin")
                   .map(
                     ([value, label]) => `<option value="${value}" ${
                       value === account.role ? "selected" : ""
-                    }>${label}</option>`,
+                    } ${account.role === "admin" ? "disabled" : ""}>${label}</option>`,
                   )
                   .join("")}
               </select>
