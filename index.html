@@ -44,41 +44,7 @@
         <h2>Inventaire</h2>
         <p class="muted">Visualisez l'état du parc, ajoutez des fauteuils et gérez leur disponibilité.</p>
         <div data-role-only="gestionnaire">
-          <div class="catalog-grid">
-            <div>
-              <h3>Types</h3>
-              <form id="add-chair-type" class="form-grid">
-                <label>
-                  Nouveau type
-                  <input name="type" placeholder="Ex : Standard" />
-                </label>
-                <button class="button button-secondary" type="submit">Ajouter</button>
-              </form>
-              <div class="pill-row" id="chair-type-list"></div>
-            </div>
-            <div>
-              <h3>Modèles</h3>
-              <form id="add-chair-model" class="form-grid">
-                <label>
-                  Nouveau modèle
-                  <input name="model" placeholder="Ex : Standard" />
-                </label>
-                <button class="button button-secondary" type="submit">Ajouter</button>
-              </form>
-              <div class="pill-row" id="chair-model-list"></div>
-            </div>
-            <div>
-              <h3>Tailles</h3>
-              <form id="add-chair-size" class="form-grid">
-                <label>
-                  Nouvelle taille
-                  <input name="size" placeholder="Ex : M" />
-                </label>
-                <button class="button button-secondary" type="submit">Ajouter</button>
-              </form>
-              <div class="pill-row" id="chair-size-list"></div>
-            </div>
-          </div>
+          <p class="muted">Ajoutez un fauteuil en sélectionnant un type, un modèle et une taille, ou en saisissant de nouvelles valeurs.</p>
         </div>
         <form id="manager-search" class="form-grid" data-role-only="gestionnaire">
           <label>
@@ -134,15 +100,18 @@
         <form id="add-chair" class="form-grid" data-role-only="gestionnaire">
           <label>
             Type
-            <select name="type" required></select>
+            <input name="type" list="chair-types-list" placeholder="Ex : Standard" required />
+            <datalist id="chair-types-list"></datalist>
           </label>
           <label>
             Modèle
-            <select name="model" required></select>
+            <input name="model" list="chair-models-list" placeholder="Ex : Standard" required />
+            <datalist id="chair-models-list"></datalist>
           </label>
           <label>
             Taille
-            <select name="size" required></select>
+            <input name="size" list="chair-sizes-list" placeholder="Ex : M" required />
+            <datalist id="chair-sizes-list"></datalist>
           </label>
           <label>
             ID fauteuil
@@ -170,15 +139,6 @@
         <div class="card-subsection">
           <h3>Accessoires</h3>
           <p class="muted">Ajoutez et suivez les accessoires par type avec un identifiant unique.</p>
-          <div data-role-only="gestionnaire">
-            <form id="add-accessory-type" class="form-grid">
-              <label>
-                Nouveau type
-                <input name="type" placeholder="Ex : Coussin" />
-              </label>
-              <button class="button button-secondary" type="submit">Ajouter le type</button>
-            </form>
-          </div>
           <form id="accessory-filter" class="form-grid">
             <label>
               Mot-clé ID
@@ -189,7 +149,8 @@
           <form id="add-accessory" class="form-grid" data-role-only="gestionnaire">
             <label>
               Type
-              <select name="type" required></select>
+              <input name="type" list="accessory-types-list" placeholder="Ex : Coussin" required />
+              <datalist id="accessory-types-list"></datalist>
             </label>
             <label>
               ID accessoire
@@ -224,7 +185,6 @@
               <tbody id="accessories"></tbody>
             </table>
           </div>
-          <div class="pill-row" id="accessory-types-list"></div>
         </div>
         <div class="card-subsection" data-role-only="gestionnaire">
           <h3>Demandeurs</h3>
@@ -439,7 +399,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" data-role-only="admin,gestionnaire,stock">
         <h2>Indicateurs</h2>
         <div class="stats" id="stats"></div>
         <div class="barcode">

@@ -14,12 +14,9 @@ const sessionInfo = document.querySelector("#session-info");
 const sessionUser = document.querySelector("#session-user");
 const loginForm = document.querySelector("#login");
 const logoutButton = document.querySelector("#logout");
-const addChairTypeForm = document.querySelector("#add-chair-type");
-const addChairModelForm = document.querySelector("#add-chair-model");
-const addChairSizeForm = document.querySelector("#add-chair-size");
-const chairTypeList = document.querySelector("#chair-type-list");
-const chairModelList = document.querySelector("#chair-model-list");
-const chairSizeList = document.querySelector("#chair-size-list");
+const chairTypesList = document.querySelector("#chair-types-list");
+const chairModelsList = document.querySelector("#chair-models-list");
+const chairSizesList = document.querySelector("#chair-sizes-list");
 const managerSearchForm = document.querySelector("#manager-search");
 const stockSearchForm = document.querySelector("#stock-search");
 const searchForm = document.querySelector("#search");
@@ -27,9 +24,9 @@ const availableTable = document.querySelector("#available");
 const chairSelect = document.querySelector("#reserve [name=\"chair\"]");
 const requesterInput = document.querySelector("#reserve [name=\"requester\"]");
 const roomInput = document.querySelector("#reserve [name=\"room\"]");
-const typeSelect = document.querySelector("#add-chair [name=\"type\"]");
-const modelSelect = document.querySelector("#add-chair [name=\"model\"]");
-const sizeSelect = document.querySelector("#add-chair [name=\"size\"]");
+const typeInput = document.querySelector("#add-chair [name=\"type\"]");
+const modelInput = document.querySelector("#add-chair [name=\"model\"]");
+const sizeInput = document.querySelector("#add-chair [name=\"size\"]");
 const managerTypeSelect = document.querySelector("#manager-search [name=\"type\"]");
 const managerModelSelect = document.querySelector("#manager-search [name=\"model\"]");
 const managerSizeSelect = document.querySelector("#manager-search [name=\"size\"]");
@@ -40,11 +37,9 @@ const addAccountForm = document.querySelector("#add-account");
 const accountsTable = document.querySelector("#accounts");
 const addRequesterForm = document.querySelector("#add-requester");
 const requestersTable = document.querySelector("#requesters");
-const addAccessoryTypeForm = document.querySelector("#add-accessory-type");
 const accessoryFilterForm = document.querySelector("#accessory-filter");
 const addAccessoryForm = document.querySelector("#add-accessory");
-const accessoryTypeSelect = document.querySelector("#add-accessory [name=\"type\"]");
-const accessoryTypeList = document.querySelector("#accessory-types-list");
+const accessoryTypeInput = document.querySelector("#add-accessory [name=\"type\"]");
 const accessoriesTable = document.querySelector("#accessories");
 const linkAccessoryForm = document.querySelector("#link-accessory");
 const adminHistoryForm = document.querySelector("#admin-history-search");
@@ -561,16 +556,6 @@ function renderInventory() {
       const actionCell = showManagerActions
         ? `
           <div class="actions">
-            <select data-state-select="${chair.id}">
-              ${Object.keys(stateLabels)
-                .map(
-                  (state) => `<option value="${state}" ${state === chair.state ? "selected" : ""}>
-                      ${stateLabels[state]}
-                    </option>`,
-                )
-                .join("")}
-            </select>
-            <button class="button button-secondary" data-set-state="${chair.id}">Appliquer</button>
             <button class="button button-secondary" data-remove-chair="${chair.id}">Supprimer</button>
           </div>
         `
@@ -596,7 +581,6 @@ function renderInventory() {
       return `
       <tr>
         <td>${chair.id}</td>
-        <td>${chair.type || "—"}</td>
         <td>${chair.type || "—"}</td>
         <td>${chair.model}</td>
         <td>${chair.size}</td>
@@ -646,18 +630,6 @@ function renderAccessories() {
       `;
       const managerActions = `
         <div class="actions">
-          <select data-accessory-state="${accessory.id}">
-            ${Object.keys(stateLabels)
-              .map(
-                (state) => `<option value="${state}" ${state === accessory.state ? "selected" : ""}>
-                    ${stateLabels[state]}
-                  </option>`,
-              )
-              .join("")}
-          </select>
-          <button class="button button-secondary" data-set-accessory-state="${accessory.id}">
-            Appliquer
-          </button>
           ${assignmentControls}
           <button class="button button-secondary" data-remove-accessory="${accessory.id}">
             Supprimer
@@ -702,20 +674,21 @@ function renderAccessories() {
 }
 
 function renderCatalog() {
-  if (typeSelect) {
-    typeSelect.innerHTML = `
-      <option value="">Choisir</option>
-      ${appState.catalog.types.map((type) => `<option>${type}</option>`).join("")}
-    `;
+  if (chairTypesList) {
+    chairTypesList.innerHTML = appState.catalog.types
+      .map((type) => `<option value="${type}"></option>`)
+      .join("");
   }
-  modelSelect.innerHTML = `
-    <option value="">Choisir</option>
-    ${appState.catalog.models.map((model) => `<option>${model}</option>`).join("")}
-  `;
-  sizeSelect.innerHTML = `
-    <option value="">Choisir</option>
-    ${appState.catalog.sizes.map((size) => `<option>${size}</option>`).join("")}
-  `;
+  if (chairModelsList) {
+    chairModelsList.innerHTML = appState.catalog.models
+      .map((model) => `<option value="${model}"></option>`)
+      .join("");
+  }
+  if (chairSizesList) {
+    chairSizesList.innerHTML = appState.catalog.sizes
+      .map((size) => `<option value="${size}"></option>`)
+      .join("");
+  }
 
   if (managerTypeSelect) {
     managerTypeSelect.innerHTML = `
@@ -745,60 +718,13 @@ function renderCatalog() {
     ${appState.catalog.sizes.map((size) => `<option>${size}</option>`).join("")}
   `;
 
-  if (chairTypeList) {
-    chairTypeList.innerHTML = appState.catalog.types
-      .map(
-        (type) => `
-          <span class="pill">
-            ${type}
-            <button class="icon-button" type="button" data-remove-chair-type="${type}">✕</button>
-          </span>
-        `,
-      )
-      .join("");
-  }
-  if (chairModelList) {
-    chairModelList.innerHTML = appState.catalog.models
-      .map(
-        (model) => `
-          <span class="pill">
-            ${model}
-            <button class="icon-button" type="button" data-remove-chair-model="${model}">✕</button>
-          </span>
-        `,
-      )
-      .join("");
-  }
-  if (chairSizeList) {
-    chairSizeList.innerHTML = appState.catalog.sizes
-      .map(
-        (size) => `
-          <span class="pill">
-            ${size}
-            <button class="icon-button" type="button" data-remove-chair-size="${size}">✕</button>
-          </span>
-        `,
-      )
-      .join("");
-  }
-
-  if (accessoryTypeSelect) {
-    accessoryTypeSelect.innerHTML = `
-      <option value="">Choisir</option>
-      ${appState.accessoryTypes.map((type) => `<option>${type}</option>`).join("")}
-    `;
-  }
-  if (accessoryTypeList) {
-    accessoryTypeList.innerHTML = appState.accessoryTypes
-      .map(
-        (type) => `
-          <span class="pill">
-            ${type}
-            <button class="icon-button" type="button" data-remove-accessory-type="${type}">✕</button>
-          </span>
-        `,
-      )
-      .join("");
+  if (accessoryTypeInput) {
+    const accessoryList = document.querySelector("#accessory-types-list");
+    if (accessoryList) {
+      accessoryList.innerHTML = appState.accessoryTypes
+        .map((type) => `<option value="${type}"></option>`)
+        .join("");
+    }
   }
   const accessoryList = document.querySelector("#accessories-list");
   if (accessoryList) {
@@ -1066,7 +992,7 @@ function handleInventorySubmit(event) {
   const payload = {
     type: formData.get("type").trim(),
     model: formData.get("model").trim(),
-    size: formData.get("size"),
+    size: formData.get("size").trim().toUpperCase(),
     chairId: formData.get("chairId").trim(),
   };
 
@@ -1077,25 +1003,18 @@ function handleInventorySubmit(event) {
     alert("Cet identifiant est déjà utilisé.");
     return;
   }
+  if (!appState.catalog.types.includes(payload.type)) {
+    appState.catalog.types.push(payload.type);
+  }
+  if (!appState.catalog.models.includes(payload.model)) {
+    appState.catalog.models.push(payload.model);
+  }
+  if (!appState.catalog.sizes.includes(payload.size)) {
+    appState.catalog.sizes.push(payload.size);
+  }
 
   addChairs(payload);
   form.reset();
-  render();
-}
-
-function handleAccessoryTypeSubmit(event) {
-  event.preventDefault();
-  if (appState.role !== "gestionnaire") {
-    alert("Seul le gestionnaire peut ajouter des types d'accessoires.");
-    return;
-  }
-  const formData = new FormData(event.target);
-  const type = formData.get("type").trim();
-  if (!type) return;
-  if (!appState.accessoryTypes.includes(type)) {
-    appState.accessoryTypes.push(type);
-  }
-  event.target.reset();
   render();
 }
 
@@ -1106,12 +1025,15 @@ function handleAccessorySubmit(event) {
     return;
   }
   const formData = new FormData(event.target);
-  const type = formData.get("type");
+  const type = formData.get("type").trim();
   const accessoryId = formData.get("accessoryId").trim();
   if (!type) return;
   if (accessoryId && isIdTaken(accessoryId)) {
     alert("Cet identifiant est déjà utilisé.");
     return;
+  }
+  if (!appState.accessoryTypes.includes(type)) {
+    appState.accessoryTypes.push(type);
   }
   addAccessory({ type, accessoryId });
   event.target.reset();
@@ -1156,7 +1078,7 @@ function handleAccessoryAction(event) {
     const accessory = appState.accessories.find((item) => item.id === id);
     if (accessory) {
       if (["rendu", "utilise"].includes(accessory.state)) {
-        alert("Impossible de lier un accessoire en état utilisé ou rendu.");
+        alert("Impossible de lier un accessoire en état en prêt ou en réparation.");
         return;
       }
       accessory.assignedChairId = select?.value || "";
@@ -1191,12 +1113,12 @@ function handleAccessoryAction(event) {
     if (appState.role === "stock") {
       if (accessory.state === "reserve" && select.value === "utilise") {
         accessory.state = "utilise";
-        logAccessoryHistory(accessory, "Passé à utilisé");
+        logAccessoryHistory(accessory, "Passé à en prêt");
       } else if (accessory.state === "utilise" && select.value === "rendu") {
         accessory.state = "rendu";
-        logAccessoryHistory(accessory, "Passé à rendu");
+        logAccessoryHistory(accessory, "Passé à en réparation");
       } else {
-        alert("Le stock ne peut changer l'état que de réservé à utilisé puis rendu.");
+        alert("Le stock ne peut changer l'état que de réservé à en prêt puis en réparation.");
         return;
       }
       render();
@@ -1215,10 +1137,10 @@ function handleAccessoryAction(event) {
     if (!accessory) return;
     if (accessory.state === "reserve" && target === "utilise") {
       accessory.state = "utilise";
-      logAccessoryHistory(accessory, "Passé à utilisé");
+      logAccessoryHistory(accessory, "Passé à en prêt");
     } else if (accessory.state === "utilise" && target === "rendu") {
       accessory.state = "rendu";
-      logAccessoryHistory(accessory, "Passé à rendu");
+      logAccessoryHistory(accessory, "Passé à en réparation");
     }
     render();
   }
@@ -1242,7 +1164,7 @@ function handleLinkAccessorySubmit(event) {
     return;
   }
   if (["rendu", "utilise"].includes(accessory.state)) {
-    alert("Impossible de lier un accessoire en état utilisé ou rendu.");
+    alert("Impossible de lier un accessoire en état en prêt ou en réparation.");
     return;
   }
   accessory.assignedChairId = chair.id;
@@ -1534,92 +1456,6 @@ function renderAccountOptions() {
   }
 }
 
-function handleChairTypeSubmit(event) {
-  event.preventDefault();
-  if (appState.role !== "gestionnaire") {
-    alert("Seul le gestionnaire peut ajouter des types de fauteuil.");
-    return;
-  }
-  const formData = new FormData(event.target);
-  const type = formData.get("type").trim();
-  if (!type) return;
-  if (!appState.catalog.types.includes(type)) {
-    appState.catalog.types.push(type);
-  }
-  event.target.reset();
-  render();
-}
-
-function handleChairModelSubmit(event) {
-  event.preventDefault();
-  if (appState.role !== "gestionnaire") {
-    alert("Seul le gestionnaire peut ajouter des modèles.");
-    return;
-  }
-  const formData = new FormData(event.target);
-  const model = formData.get("model").trim();
-  if (!model) return;
-  if (!appState.catalog.models.includes(model)) {
-    appState.catalog.models.push(model);
-  }
-  event.target.reset();
-  render();
-}
-
-function handleChairSizeSubmit(event) {
-  event.preventDefault();
-  if (appState.role !== "gestionnaire") {
-    alert("Seul le gestionnaire peut ajouter des tailles.");
-    return;
-  }
-  const formData = new FormData(event.target);
-  const size = formData.get("size").trim().toUpperCase();
-  if (!size) return;
-  if (!appState.catalog.sizes.includes(size)) {
-    appState.catalog.sizes.push(size);
-  }
-  event.target.reset();
-  render();
-}
-
-function handleCatalogAction(event) {
-  if (appState.role !== "gestionnaire") {
-    alert("Seul le gestionnaire peut modifier le catalogue.");
-    return;
-  }
-  const removeType = event.target.closest("[data-remove-chair-type]");
-  if (removeType) {
-    const value = removeType.dataset.removeChairType;
-    appState.catalog.types = appState.catalog.types.filter((item) => item !== value);
-    render();
-    return;
-  }
-  const removeModel = event.target.closest("[data-remove-chair-model]");
-  if (removeModel) {
-    const value = removeModel.dataset.removeChairModel;
-    appState.catalog.models = appState.catalog.models.filter((item) => item !== value);
-    render();
-    return;
-  }
-  const removeSize = event.target.closest("[data-remove-chair-size]");
-  if (removeSize) {
-    const value = removeSize.dataset.removeChairSize;
-    appState.catalog.sizes = appState.catalog.sizes.filter((item) => item !== value);
-    render();
-  }
-}
-
-function handleAccessoryTypeAction(event) {
-  if (appState.role !== "gestionnaire") {
-    alert("Seul le gestionnaire peut modifier les types d'accessoires.");
-    return;
-  }
-  const removeType = event.target.closest("[data-remove-accessory-type]");
-  if (!removeType) return;
-  const value = removeType.dataset.removeAccessoryType;
-  appState.accessoryTypes = appState.accessoryTypes.filter((item) => item !== value);
-  render();
-}
 
 function handleSearchSubmit(event) {
   event.preventDefault();
@@ -1773,18 +1609,10 @@ document
   .addEventListener("click", handleInventoryAction);
 loginForm?.addEventListener("submit", handleLogin);
 logoutButton?.addEventListener("click", handleLogout);
-addChairTypeForm?.addEventListener("submit", handleChairTypeSubmit);
-addChairModelForm?.addEventListener("submit", handleChairModelSubmit);
-addChairSizeForm?.addEventListener("submit", handleChairSizeSubmit);
-chairTypeList?.addEventListener("click", handleCatalogAction);
-chairModelList?.addEventListener("click", handleCatalogAction);
-chairSizeList?.addEventListener("click", handleCatalogAction);
 addAccountForm?.addEventListener("submit", handleAccountSubmit);
 addRequesterForm?.addEventListener("submit", handleRequesterSubmit);
 accountsTable?.addEventListener("click", handleAccountAction);
 requestersTable?.addEventListener("click", handleRequesterAction);
-addAccessoryTypeForm?.addEventListener("submit", handleAccessoryTypeSubmit);
-accessoryTypeList?.addEventListener("click", handleAccessoryTypeAction);
 addAccessoryForm?.addEventListener("submit", handleAccessorySubmit);
 accessoryFilterForm?.addEventListener("submit", handleAccessoryFilter);
 accessoriesTable?.addEventListener("click", handleAccessoryAction);
