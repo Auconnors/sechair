@@ -116,10 +116,6 @@ const appState = {
 
 const accounts = [
   { name: "Admin", role: "admin", password: "admin" },
-  { name: "Gestionnaire", role: "gestionnaire", password: "gestion" },
-  { name: "Stock", role: "stock", password: "stock" },
-  { name: "Réserve", role: "utilisateur", password: "reserve" },
-  { name: "Prêt", role: "pret", password: "pret" },
 ];
 
 const requesters = ["Réserve"];
@@ -423,8 +419,8 @@ function updateReservation(reservationId, targetState) {
   const nextState = targetState || stateTransitions[reservation.state];
   if (!nextState) return;
 
-  if (appState.role === "stock" && !["utilise", "rendu"].includes(nextState)) {
-    alert("Le compte stock ne peut définir que 'en prêt' ou 'en réparation'.");
+  if (appState.role === "stock" && !["utilise", "rendu", "disponible"].includes(nextState)) {
+    alert("Le compte stock ne peut définir que 'en prêt', 'en réparation' ou 'en réserve'.");
     return;
   }
   if (appState.role === "utilisateur") {
@@ -460,8 +456,8 @@ function updateReservation(reservationId, targetState) {
 function updateChairState(chairId, nextState) {
   const chair = appState.chairs.find((item) => item.id === chairId);
   if (!chair) return;
-  if (appState.role === "stock" && !["utilise", "rendu"].includes(nextState)) {
-    alert("Le compte stock ne peut définir que 'en prêt' ou 'en réparation'.");
+  if (appState.role === "stock" && !["utilise", "rendu", "disponible"].includes(nextState)) {
+    alert("Le compte stock ne peut définir que 'en prêt', 'en réparation' ou 'en réserve'.");
     return;
   }
   if (appState.role === "utilisateur") {
@@ -522,6 +518,7 @@ function renderStats() {
 function renderInventory() {
   const isManager = appState.role === "gestionnaire";
   const isStock = appState.role === "stock";
+  const isReserveOperator = ["utilisateur", "pret"].includes(appState.role);
   const isPret = appState.role === "pret";
   const querySource = isStock || isPret ? appState.stockSearch : appState.managerSearch;
   const query = querySource.query.toLowerCase();
@@ -533,7 +530,6 @@ function renderInventory() {
       if (appState.managerSearch.state && chair.state !== appState.managerSearch.state) return false;
     }
     if (isStock || isPret) {
-      if (!["reserve", "utilise", "rendu"].includes(chair.state)) return false;
       if (appState.stockSearch.state && chair.state !== appState.stockSearch.state) return false;
     }
     if (query && !chair.id.toLowerCase().includes(query)) return false;
@@ -541,7 +537,7 @@ function renderInventory() {
   });
 
   if (isStock || isPret) {
-    const order = { reserve: 1, utilise: 2, rendu: 3 };
+    const order = { reserve: 1, utilise: 2, rendu: 3, disponible: 4 };
     filtered.sort((a, b) => (order[a.state] || 99) - (order[b.state] || 99));
   }
 
@@ -567,7 +563,12 @@ function renderInventory() {
                   En prêt
                 </button>`
               : ""}
-            ${chair.state === "utilise" && !isPret
+            ${chair.state !== "disponible"
+              ? `<button class="button button-secondary" data-quick-state="${chair.id}" data-state="disponible">
+                  En réserve
+                </button>`
+              : ""}
+            ${chair.state !== "rendu" && !isPret
               ? `<button class="button button-secondary" data-quick-state="${chair.id}" data-state="rendu">
                   En réparation
                 </button>`
@@ -651,7 +652,7 @@ function renderAccessories() {
           ${assignmentControls}
         </div>
       `;
-      const actions = isManager ? managerActions : isStock ? stockActions : "—";
+      const actions = isManager ? managerActions : isStock || isReserveOperator ? stockActions : "—";
       return `
         <tr>
           <td>${accessory.id}</td>
@@ -1069,8 +1070,8 @@ function handleAccessoryAction(event) {
   }
   const assignButton = event.target.closest("[data-assign-accessory]");
   if (assignButton) {
-    if (!["stock", "gestionnaire"].includes(appState.role)) {
-      alert("Seul le stock ou le gestionnaire peut lier un accessoire.");
+    if (!["stock", "gestionnaire", "utilisateur", "pret"].includes(appState.role)) {
+      alert("Seul le stock, la réserve, le prêt ou le gestionnaire peut lier un accessoire.");
       return;
     }
     const id = assignButton.dataset.assignAccessory;
@@ -1127,8 +1128,8 @@ function handleAccessoryAction(event) {
   }
   const quickButton = event.target.closest("[data-accessory-quick]");
   if (quickButton) {
-    if (appState.role !== "stock") {
-      alert("Seul le stock peut modifier l'état des accessoires.");
+    if (!["stock", "utilisateur", "pret"].includes(appState.role)) {
+      alert("Seul le stock, la réserve ou le prêt peut modifier l'état des accessoires.");
       return;
     }
     const id = quickButton.dataset.accessoryQuick;
@@ -1148,8 +1149,8 @@ function handleAccessoryAction(event) {
 
 function handleLinkAccessorySubmit(event) {
   event.preventDefault();
-  if (!["stock", "gestionnaire"].includes(appState.role)) {
-    alert("Seul le stock ou le gestionnaire peut lier un accessoire.");
+  if (!["stock", "gestionnaire", "utilisateur", "pret"].includes(appState.role)) {
+    alert("Seul le stock, la réserve, le prêt ou le gestionnaire peut lier un accessoire.");
     return;
   }
   const formData = new FormData(event.target);

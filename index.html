@@ -40,7 +40,7 @@
         <p class="muted">Prototype : chaque compte possède son propre mot de passe.</p>
       </section>
 
-      <section class="card" data-role-only="gestionnaire,stock">
+      <section class="card" data-role-only="gestionnaire,stock,utilisateur,pret">
         <h2>Inventaire</h2>
         <p class="muted">Visualisez l'état du parc, ajoutez des fauteuils et gérez leur disponibilité.</p>
         <div data-role-only="gestionnaire">
@@ -86,6 +86,7 @@
             Filtre état
             <select name="state">
               <option value="">Tous</option>
+              <option value="disponible">En réserve</option>
               <option value="reserve">Réservé</option>
               <option value="utilise">En prêt</option>
               <option value="rendu">En réparation</option>
