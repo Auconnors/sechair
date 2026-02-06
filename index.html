@@ -40,7 +40,7 @@
         <p class="muted">Prototype : chaque compte possède son propre mot de passe.</p>
       </section>
 
-      <section class="card" data-role-only="gestionnaire,stock,utilisateur,pret">
+      <section class="card" data-role-only="gestionnaire,stock">
         <h2>Inventaire</h2>
         <p class="muted">Visualisez l'état du parc, ajoutez des fauteuils et gérez leur disponibilité.</p>
         <div data-role-only="gestionnaire">
@@ -183,7 +183,7 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="accessories"></tbody>
+              <tbody id="accessories" data-accessories-table></tbody>
             </table>
           </div>
         </div>
@@ -331,72 +331,114 @@
       </section>
 
       <section class="card" data-role-only="utilisateur,pret">
-        <h2>Recherche & réservation</h2>
-        <p class="muted">Filtrez les fauteuils en réserve, choisissez un fauteuil précis, puis réservez-le.</p>
-        <form id="search" class="form-grid">
-          <label>
-            Modèle
-            <select name="model">
-              <option value="">Tous</option>
-            </select>
-          </label>
-          <label>
-            Taille
-            <select name="size">
-              <option value="">Toutes</option>
-            </select>
-          </label>
-          <label>
-            Mot-clé ID
-            <input name="query" placeholder="SECH-" />
-          </label>
-          <button class="button button-secondary" type="submit">Filtrer</button>
-        </form>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Fauteuil</th>
-                <th>Modèle</th>
-                <th>Taille</th>
-                <th>État</th>
-                <th>Choisir</th>
-              </tr>
-            </thead>
-            <tbody id="available"></tbody>
-          </table>
-        </div>
-        <form id="reserve" class="form-grid">
-          <label>
-            Demandeur
-            <input name="requester" list="requesters-list" placeholder="Nom du demandeur" required />
-            <datalist id="requesters-list"></datalist>
-          </label>
-          <label>
-            Fauteuil choisi
-            <input name="chair" placeholder="SECH-0001" required />
-          </label>
-          <label>
-            Chambre
-            <input name="room" placeholder="Ex : 204B" required />
-          </label>
-          <button class="button" type="submit">Réserver</button>
-        </form>
+        <div class="reserve-layout">
+          <div>
+            <h2>Recherche & réservation</h2>
+            <p class="muted">Filtrez les fauteuils en réserve, choisissez un fauteuil précis, puis réservez-le.</p>
+            <form id="search" class="form-grid">
+              <label>
+                Modèle
+                <select name="model">
+                  <option value="">Tous</option>
+                </select>
+              </label>
+              <label>
+                Taille
+                <select name="size">
+                  <option value="">Toutes</option>
+                </select>
+              </label>
+              <label>
+                Mot-clé ID
+                <input name="query" placeholder="SECH-" />
+              </label>
+              <button class="button button-secondary" type="submit">Filtrer</button>
+            </form>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fauteuil</th>
+                    <th>Modèle</th>
+                    <th>Taille</th>
+                    <th>État</th>
+                    <th>Choisir</th>
+                  </tr>
+                </thead>
+                <tbody id="available"></tbody>
+              </table>
+            </div>
+            <form id="reserve" class="form-grid">
+              <label>
+                Demandeur
+                <input name="requester" list="requesters-list" placeholder="Nom du demandeur" required />
+                <datalist id="requesters-list"></datalist>
+              </label>
+              <label>
+                Fauteuil choisi
+                <input name="chair" placeholder="SECH-0001" required />
+              </label>
+              <label>
+                Chambre
+                <input name="room" placeholder="Ex : 204B" required />
+              </label>
+              <button class="button" type="submit">Réserver</button>
+            </form>
 
-        <h3>Réservations & usage</h3>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Réservation</th>
-                <th>Fauteuil</th>
-                <th>Chambre</th>
-                <th>État</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="reservations"></tbody>
-          </table>
+            <h3>Réservations & usage</h3>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Réservation</th>
+                    <th>Fauteuil</th>
+                    <th>Chambre</th>
+                    <th>État</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reservations"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h2>Accessoires</h2>
+            <p class="muted">Trouvez un accessoire disponible et associez-le à un fauteuil réservé.</p>
+            <form id="accessory-filter-reserve" class="form-grid">
+              <label>
+                Mot-clé ID
+                <input name="query" placeholder="ACC-" />
+              </label>
+              <button class="button button-secondary" type="submit">Filtrer</button>
+            </form>
+            <form id="link-accessory-reserve" class="form-grid">
+              <label>
+                Accessoire
+                <input name="accessoryId" list="accessories-list" placeholder="ACC-0001" />
+                <datalist id="accessories-list"></datalist>
+              </label>
+              <label>
+                Fauteuil (ID)
+                <input name="chairId" list="chairs-list" placeholder="SECH-0001" required />
+                <datalist id="chairs-list"></datalist>
+              </label>
+              <button class="button button-secondary" type="submit">Associer</button>
+            </form>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Identifiant</th>
+                    <th>Type</th>
+                    <th>État</th>
+                    <th>Lié à</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody data-accessories-table></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
 

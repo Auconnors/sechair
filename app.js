@@ -40,8 +40,12 @@ const requestersTable = document.querySelector("#requesters");
 const accessoryFilterForm = document.querySelector("#accessory-filter");
 const addAccessoryForm = document.querySelector("#add-accessory");
 const accessoryTypeInput = document.querySelector("#add-accessory [name=\"type\"]");
-const accessoriesTable = document.querySelector("#accessories");
+const accessoriesTables = document.querySelectorAll("[data-accessories-table]");
 const linkAccessoryForm = document.querySelector("#link-accessory");
+const linkAccessoryReserveForm = document.querySelector("#link-accessory-reserve");
+const accessoryFilterReserveForm = document.querySelector("#accessory-filter-reserve");
+const linkAccessoryReserveForm = document.querySelector("#link-accessory-reserve");
+const accessoryFilterReserveForm = document.querySelector("#accessory-filter-reserve");
 const adminHistoryForm = document.querySelector("#admin-history-search");
 const adminHistoryTable = document.querySelector("#admin-history");
 const adminHistoryExportButton = document.querySelector("#admin-history-export");
@@ -605,13 +609,14 @@ function renderInventory() {
 function renderAccessories() {
   const isManager = appState.role === "gestionnaire";
   const isStock = appState.role === "stock";
+  const isReserveOperator = ["utilisateur", "pret"].includes(appState.role);
   const query = appState.accessorySearch.query.toLowerCase();
   const filtered = appState.accessories.filter((accessory) => {
     if (query && !accessory.id.toLowerCase().includes(query)) return false;
     return true;
   });
 
-  accessoriesTable.innerHTML = filtered
+  const tableHtml = filtered
     .map((accessory) => {
       const chairOptions = appState.chairs
         .map(
@@ -665,13 +670,16 @@ function renderAccessories() {
     })
     .join("");
 
-  if (!filtered.length) {
-    accessoriesTable.innerHTML = `
-      <tr>
-        <td colspan="5" class="muted">Aucun accessoire pour ces filtres.</td>
-      </tr>
-    `;
-  }
+  accessoriesTables.forEach((table) => {
+    table.innerHTML = tableHtml;
+    if (!filtered.length) {
+      table.innerHTML = `
+        <tr>
+          <td colspan="5" class="muted">Aucun accessoire pour ces filtres.</td>
+        </tr>
+      `;
+    }
+  });
 }
 
 function renderCatalog() {
@@ -778,9 +786,11 @@ function renderReservations() {
   const showActions = ["stock", "gestionnaire", "pret"].includes(appState.role);
   const reservations = appState.role === "utilisateur"
     ? appState.reservations.filter(
-      (item) => item.accountName === appState.user?.name && item.state !== "rendu",
+      (item) => item.accountName === appState.user?.name && item.state !== "utilise",
     )
-    : appState.reservations;
+    : appState.role === "pret"
+      ? appState.reservations.filter((item) => item.state !== "utilise")
+      : appState.reservations;
   reservationsTable.innerHTML = reservations
     .map((reservation) => {
       const actionLabel = stateTransitions[reservation.state]
@@ -1616,8 +1626,12 @@ accountsTable?.addEventListener("click", handleAccountAction);
 requestersTable?.addEventListener("click", handleRequesterAction);
 addAccessoryForm?.addEventListener("submit", handleAccessorySubmit);
 accessoryFilterForm?.addEventListener("submit", handleAccessoryFilter);
-accessoriesTable?.addEventListener("click", handleAccessoryAction);
+accessoryFilterReserveForm?.addEventListener("submit", handleAccessoryFilter);
+accessoriesTables.forEach((table) => {
+  table.addEventListener("click", handleAccessoryAction);
+});
 linkAccessoryForm?.addEventListener("submit", handleLinkAccessorySubmit);
+linkAccessoryReserveForm?.addEventListener("submit", handleLinkAccessorySubmit);
 managerSearchForm?.addEventListener("submit", handleManagerSearchSubmit);
 stockSearchForm?.addEventListener("submit", handleStockSearchSubmit);
 searchForm?.addEventListener("submit", handleSearchSubmit);
