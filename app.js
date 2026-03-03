@@ -24,9 +24,6 @@ const availableTable = document.querySelector("#available");
 const chairSelect = document.querySelector("#reserve [name=\"chair\"]");
 const requesterInput = document.querySelector("#reserve [name=\"requester\"]");
 const roomInput = document.querySelector("#reserve [name=\"room\"]");
-const managerTypeSelect = document.querySelector("#manager-search [name=\"type\"]");
-const managerModelSelect = document.querySelector("#manager-search [name=\"model\"]");
-const managerSizeSelect = document.querySelector("#manager-search [name=\"size\"]");
 const searchModelSelect = document.querySelector("#search [name=\"model\"]");
 const searchSizeSelect = document.querySelector("#search [name=\"size\"]");
 const accountInput = document.querySelector("#login [name=\"account\"]");
@@ -704,24 +701,6 @@ function renderCatalog() {
       .join("");
   }
 
-  if (managerTypeSelect) {
-    managerTypeSelect.innerHTML = `
-      <option value="">Tous</option>
-      ${appState.catalog.types.map((type) => `<option>${type}</option>`).join("")}
-    `;
-  }
-  if (managerModelSelect) {
-    managerModelSelect.innerHTML = `
-      <option value="">Tous</option>
-      ${appState.catalog.models.map((model) => `<option>${model}</option>`).join("")}
-    `;
-  }
-  if (managerSizeSelect) {
-    managerSizeSelect.innerHTML = `
-      <option value="">Toutes</option>
-      ${appState.catalog.sizes.map((size) => `<option>${size}</option>`).join("")}
-    `;
-  }
   searchModelSelect.innerHTML = `
     <option value="">Tous</option>
     ${appState.catalog.models.map((model) => `<option>${model}</option>`).join("")}
@@ -1498,17 +1477,21 @@ function handleManagerSearchSubmit(event) {
 
   if (action === "add-chair") {
     const payload = {
-      type: (formData.get("addType") || "").trim(),
-      model: (formData.get("addModel") || "").trim(),
-      size: ((formData.get("addSize") || "").trim()).toUpperCase(),
+      type: (formData.get("type") || "").trim(),
+      model: (formData.get("model") || "").trim(),
+      size: ((formData.get("size") || "").trim()).toUpperCase(),
       chairId: (formData.get("chairId") || "").trim(),
     };
 
     if (!payload.type || !payload.model || !payload.size) {
-      alert("Type, modèle et taille sont requis pour ajouter un fauteuil.");
+      alert("Renseignez type, modèle et taille (saisie libre ou sélection) pour ajouter un fauteuil.");
       return;
     }
-    if (payload.chairId && isIdTaken(payload.chairId)) {
+    if (!payload.chairId) {
+      alert("Renseignez l'ID fauteuil pour l'ajout.");
+      return;
+    }
+    if (isIdTaken(payload.chairId)) {
       alert("Cet identifiant est déjà utilisé.");
       return;
     }
@@ -1518,18 +1501,14 @@ function handleManagerSearchSubmit(event) {
     if (!appState.catalog.sizes.includes(payload.size)) appState.catalog.sizes.push(payload.size);
 
     addChairs(payload);
-    ["addType", "addModel", "addSize", "chairId"].forEach((name) => {
-      const field = event.target.elements.namedItem(name);
-      if (field) field.value = "";
-    });
   }
 
   appState.managerSearch = {
-    type: formData.get("type"),
-    model: formData.get("model"),
-    size: formData.get("size"),
+    type: (formData.get("type") || "").trim(),
+    model: (formData.get("model") || "").trim(),
+    size: ((formData.get("size") || "").trim()).toUpperCase(),
     state: formData.get("state"),
-    query: (formData.get("query") || "").trim(),
+    query: (formData.get("chairId") || "").trim(),
   };
   render();
 }

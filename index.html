@@ -44,26 +44,20 @@
         <h2>Inventaire</h2>
         <p class="muted">Visualisez l'état du parc, ajoutez des fauteuils et gérez leur disponibilité.</p>
         <div data-role-only="gestionnaire">
-          <p class="muted">Ajoutez un fauteuil en sélectionnant un type, un modèle et une taille, ou en saisissant de nouvelles valeurs.</p>
+          <p class="muted">Filtrez et ajoutez depuis les mêmes champs : tapez une valeur ou choisissez une proposition.</p>
         </div>
         <form id="manager-search" class="form-grid" data-role-only="gestionnaire">
           <label>
             Filtre type
-            <select name="type">
-              <option value="">Tous</option>
-            </select>
+            <input name="type" list="chair-types-list" placeholder="Tous" />
           </label>
           <label>
             Filtre modèle
-            <select name="model">
-              <option value="">Tous</option>
-            </select>
+            <input name="model" list="chair-models-list" placeholder="Tous" />
           </label>
           <label>
             Filtre taille
-            <select name="size">
-              <option value="">Toutes</option>
-            </select>
+            <input name="size" list="chair-sizes-list" placeholder="Toutes" />
           </label>
           <label>
             Filtre état
@@ -76,26 +70,10 @@
             </select>
           </label>
           <label>
-            Mot-clé ID
-            <input name="query" placeholder="SECH-" />
-          </label>
-          <button class="button button-secondary" type="submit">Filtrer</button>
-          <label>
-            Type (saisir ou choisir)
-            <input name="addType" list="chair-types-list" placeholder="Ex : Standard" />
-          </label>
-          <label>
-            Modèle (saisir ou choisir)
-            <input name="addModel" list="chair-models-list" placeholder="Ex : Électrique" />
-          </label>
-          <label>
-            Taille (saisir ou choisir)
-            <input name="addSize" list="chair-sizes-list" placeholder="Ex : XL" />
-          </label>
-          <label>
             ID fauteuil
             <input name="chairId" placeholder="SECH-0001" />
           </label>
+          <button class="button button-secondary" type="submit">Filtrer</button>
           <button class="button" type="submit" name="action" value="add-chair">Ajouter fauteuil</button>
         </form>
         <form id="stock-search" class="form-grid" data-role-only="stock">
