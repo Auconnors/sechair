@@ -560,7 +560,7 @@ function renderInventory() {
       : "<th>Identifiant</th><th>Type</th><th>Modèle</th><th>Taille</th><th>État</th><th>Historique</th><th>Actions</th>";
   }
   const isStock = appState.role === "stock";
-  const isReserveOperator = ["utilisateur", "pret"].includes(appState.role);
+  const isReserveOperator = appState.role === "pret";
   const isPret = appState.role === "pret";
   const querySource = isStock || isPret ? appState.stockSearch : appState.managerSearch;
   const query = querySource.query.toLowerCase();
@@ -649,7 +649,7 @@ function renderInventory() {
 function renderAccessories() {
   const isManager = appState.role === "gestionnaire";
   const isStock = appState.role === "stock";
-  const isReserveOperator = ["utilisateur", "pret"].includes(appState.role);
+  const isReserveOperator = appState.role === "pret";
   const query = isManager ? "" : appState.accessorySearch.query.toLowerCase();
   const filtered = appState.accessories.filter((accessory) => {
     if (query && !accessory.id.toLowerCase().includes(query)) return false;
@@ -676,7 +676,6 @@ function renderAccessories() {
       `;
       const managerActions = `
         <div class="actions">
-          ${assignmentControls}
           <button class="button button-secondary" data-remove-accessory="${accessory.id}">
             Supprimer
           </button>
@@ -1099,8 +1098,8 @@ function handleAccessoryAction(event) {
   }
   const assignButton = event.target.closest("[data-assign-accessory]");
   if (assignButton) {
-    if (!["stock", "gestionnaire", "utilisateur", "pret"].includes(appState.role)) {
-      alert("Seul le stock, la réserve, le prêt ou le gestionnaire peut lier un accessoire.");
+    if (!["stock", "pret"].includes(appState.role)) {
+      alert("Seul le stock ou le prêt peut lier un accessoire.");
       return;
     }
     const id = assignButton.dataset.assignAccessory;
@@ -1157,8 +1156,8 @@ function handleAccessoryAction(event) {
   }
   const quickButton = event.target.closest("[data-accessory-quick]");
   if (quickButton) {
-    if (!["stock", "utilisateur", "pret"].includes(appState.role)) {
-      alert("Seul le stock, la réserve ou le prêt peut modifier l'état des accessoires.");
+    if (!["stock", "pret"].includes(appState.role)) {
+      alert("Seul le stock ou le prêt peut modifier l'état des accessoires.");
       return;
     }
     const id = quickButton.dataset.accessoryQuick;
@@ -1178,8 +1177,8 @@ function handleAccessoryAction(event) {
 
 function handleLinkAccessorySubmit(event) {
   event.preventDefault();
-  if (!["stock", "gestionnaire", "utilisateur", "pret"].includes(appState.role)) {
-    alert("Seul le stock, la réserve, le prêt ou le gestionnaire peut lier un accessoire.");
+  if (!["stock", "pret"].includes(appState.role)) {
+    alert("Seul le stock ou le prêt peut lier un accessoire.");
     return;
   }
   const formData = new FormData(event.target);

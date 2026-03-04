@@ -96,7 +96,7 @@
         <div class="card-subsection">
           <h3>Accessoires</h3>
           <p class="muted">Ajoutez et suivez les accessoires par type avec un identifiant unique.</p>
-          <form id="accessory-filter" class="form-grid" data-role-only="stock">
+          <form id="accessory-filter" class="form-grid" data-role-only="stock,gestionnaire">
             <label>
               Mot-clé ID
               <input name="query" placeholder="ACC-" />
@@ -119,7 +119,7 @@
             </label>
             <button class="button" type="submit">Ajouter</button>
           </form>
-          <form id="link-accessory" class="form-grid" data-role-only="stock,gestionnaire">
+          <form id="link-accessory" class="form-grid" data-role-only="stock">
             <label>
               Accessoire
               <input name="accessoryId" list="accessories-list" placeholder="ACC-0001" />
@@ -365,7 +365,7 @@
               </table>
             </div>
           </div>
-          <div data-role-only="utilisateur,pret">
+          <div data-role-only="pret">
             <h2>Accessoires</h2>
             <p class="muted">Trouvez un accessoire disponible et associez-le à un fauteuil réservé.</p>
             <form id="accessory-filter-reserve" class="form-grid">
