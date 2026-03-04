@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SeChair — Prototype de gestion de stock</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Prototype</p>
+        <h1>SeChair</h1>
+        <p class="subtitle">Gestion de stock de fauteuils roulants</p>
+      </div>
+      <div class="header-actions">
+        <div class="session-info is-hidden" id="session-info">
+          <div class="session-label">Connecté en tant que</div>
+          <div class="session-user" id="session-user">—</div>
+        </div>
+        <button id="logout" class="button button-secondary is-hidden">Se déconnecter</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="card" data-role-only="guest">
+        <h2>Connexion</h2>
+        <p class="muted">Choisissez un compte pour accéder à l'interface réserve ou gestionnaire.</p>
+        <form id="login" class="form-grid">
+          <label>
+            Identifiant
+            <input name="account" placeholder="Rentrer votre identifiant" required />
+          </label>
+          <label>
+            Mot de passe
+            <input name="password" type="password" placeholder="••••••••" required />
+          </label>
+          <button class="button" type="submit">Se connecter</button>
+        </form>
+        <p class="muted">Prototype : chaque compte possède son propre mot de passe.</p>
+      </section>
+
+      <section class="card is-hidden" data-role-only="gestionnaire,stock">
+        <h2>Inventaire</h2>
+        <p class="muted">Visualisez l'état du parc, ajoutez des fauteuils et gérez leur disponibilité.</p>
+        <div data-role-only="gestionnaire">
+          <p class="muted">Filtrez et ajoutez depuis les mêmes champs : tapez une valeur ou choisissez une proposition.</p>
+        </div>
+        <form id="manager-search" class="form-grid" data-role-only="gestionnaire">
+          <label>
+            Filtre type
+            <input name="type" list="chair-types-list" placeholder="Tous" />
+          </label>
+          <label>
+            Filtre modèle
+            <input name="model" list="chair-models-list" placeholder="Tous" />
+          </label>
+          <label>
+            Filtre taille
+            <input name="size" list="chair-sizes-list" placeholder="Toutes" />
+          </label>
+          <label>
+            ID fauteuil
+            <input name="chairId" placeholder="SECH-0001" />
+          </label>
+          <button class="button button-secondary" type="submit">Filtrer</button>
+          <button class="button" type="submit" name="action" value="add-chair">Ajouter fauteuil</button>
+        </form>
+        <form id="stock-search" class="form-grid" data-role-only="stock">
+          <label>
+            Mot-clé ID
+            <input name="query" placeholder="SECH-" />
+          </label>
+          <button class="button button-secondary" type="submit">Filtrer</button>
+        </form>
+        <datalist id="chair-types-list"></datalist>
+        <datalist id="chair-models-list"></datalist>
+        <datalist id="chair-sizes-list"></datalist>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Identifiant</th>
+                <th>Type</th>
+                <th>Modèle</th>
+                <th>Taille</th>
+                <th>État</th>
+                <th>Historique</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory"></tbody>
+          </table>
+        </div>
+        <div class="card-subsection">
+          <h3>Accessoires</h3>
+          <p class="muted">Ajoutez et suivez les accessoires par type avec un identifiant unique.</p>
+          <form id="accessory-filter" class="form-grid">
+            <label>
+              Mot-clé ID
+              <input name="query" placeholder="ACC-" />
+            </label>
+            <button class="button button-secondary" type="submit">Filtrer</button>
+          </form>
+          <form id="add-accessory" class="form-grid" data-role-only="gestionnaire">
+            <label>
+              Type
+              <input name="type" list="accessory-types-list" placeholder="Ex : Coussin" required />
+              <datalist id="accessory-types-list"></datalist>
+            </label>
+            <label>
+              ID accessoire
+              <input name="accessoryId" placeholder="ACC-0001" />
+            </label>
+            <button class="button" type="submit">Ajouter</button>
+          </form>
+          <form id="link-accessory" class="form-grid" data-role-only="stock,gestionnaire">
+            <label>
+              Accessoire
+              <input name="accessoryId" list="accessories-list" placeholder="ACC-0001" />
+              <datalist id="accessories-list" data-accessories-options></datalist>
+            </label>
+            <label>
+              Fauteuil (ID)
+              <input name="chairId" list="chairs-list" placeholder="SECH-0001" required />
+              <datalist id="chairs-list" data-chairs-options></datalist>
+            </label>
+            <button class="button button-secondary" type="submit">Associer</button>
+          </form>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Identifiant</th>
+                  <th>Type</th>
+                  <th>État</th>
+                  <th>Lié à</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="accessories" data-accessories-table></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-subsection" data-role-only="gestionnaire">
+          <h3>Demandeurs</h3>
+          <form id="add-requester" class="form-grid">
+            <label>
+              Nom du demandeur
+              <input name="name" placeholder="Ex : Marie" required />
+            </label>
+            <button class="button button-secondary" type="submit">Ajouter</button>
+          </form>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Demandeur</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="requesters"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="card is-hidden" data-role-only="admin">
+        <h2>Administration des comptes</h2>
+        <p class="muted">Créez des comptes et attribuez les droits (admin, gestionnaire, stock, réserve, prêt).</p>
+        <form id="add-account" class="form-grid">
+          <label>
+            Nom du compte
+            <input name="name" placeholder="Ex : Claire" required />
+          </label>
+          <label>
+            Rôle
+            <select name="role" required>
+              <option value="">Choisir</option>
+              <option value="admin">Admin</option>
+              <option value="gestionnaire">Gestionnaire</option>
+              <option value="stock">Stock</option>
+              <option value="utilisateur">Réserve</option>
+              <option value="pret">Prêt</option>
+            </select>
+          </label>
+          <label>
+            Mot de passe
+            <input name="password" type="password" placeholder="Nouveau mot de passe" required />
+          </label>
+          <button class="button" type="submit">Créer le compte</button>
+        </form>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Compte</th>
+                <th>Rôle</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="accounts"></tbody>
+          </table>
+        </div>
+        <div class="card-subsection">
+          <h3>Historique</h3>
+          <form id="admin-history-search" class="form-grid">
+            <label>
+              Recherche
+              <input name="query" placeholder="Rechercher un événement" />
+            </label>
+            <button class="button button-secondary" type="submit">Filtrer</button>
+            <button class="button" type="button" id="admin-history-export">Exporter le mois courant</button>
+          </form>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-history"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-subsection">
+          <h3>Archives mensuelles</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mois</th>
+                  <th>Entrées</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-archive-history"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-subsection">
+          <h3>Historique des fauteuils</h3>
+          <form id="admin-chair-history-search" class="form-grid">
+            <label>
+              Recherche
+              <input name="query" placeholder="Rechercher un fauteuil" />
+            </label>
+            <button class="button button-secondary" type="submit">Filtrer</button>
+          </form>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Fauteuil</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-chair-history"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-subsection">
+          <h3>Historique des accessoires</h3>
+          <form id="admin-accessory-history-search" class="form-grid">
+            <label>
+              Recherche
+              <input name="query" placeholder="Rechercher un accessoire" />
+            </label>
+            <button class="button button-secondary" type="submit">Filtrer</button>
+          </form>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Accessoire</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-accessory-history"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="card is-hidden" data-role-only="utilisateur,pret">
+        <div class="reserve-layout">
+          <div>
+            <h2>Recherche & réservation</h2>
+            <p class="muted">Filtrez les fauteuils en réserve, choisissez un fauteuil précis, puis réservez-le.</p>
+            <form id="search" class="form-grid">
+              <label>
+                Modèle
+                <select name="model">
+                  <option value="">Tous</option>
+                </select>
+              </label>
+              <label>
+                Taille
+                <select name="size">
+                  <option value="">Toutes</option>
+                </select>
+              </label>
+              <button class="button button-secondary" type="submit">Filtrer</button>
+            </form>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Modèle</th>
+                    <th>Taille</th>
+                    <th>État</th>
+                    <th>Choisir</th>
+                  </tr>
+                </thead>
+                <tbody id="available"></tbody>
+              </table>
+            </div>
+            <form id="reserve" class="form-grid">
+              <label>
+                Demandeur
+                <input name="requester" list="requesters-list" placeholder="Nom du demandeur" required />
+                <datalist id="requesters-list"></datalist>
+              </label>
+              <label>
+                Fauteuil choisi
+                <input name="chair" type="hidden" required />
+                <input name="chairLabel" placeholder="Sélectionner via le bouton Choisir" readonly required />
+              </label>
+              <label>
+                Chambre
+                <input name="room" placeholder="Ex : 204B" required />
+              </label>
+              <button class="button" type="submit">Réserver</button>
+            </form>
+
+            <h3>Réservations & usage</h3>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Réservation</th>
+                    <th>Fauteuil</th>
+                    <th>Chambre</th>
+                    <th>État</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reservations"></tbody>
+              </table>
+            </div>
+          </div>
+          <div data-role-only="utilisateur">
+            <h2>Accessoires</h2>
+            <p class="muted">Trouvez un accessoire disponible et associez-le à un fauteuil réservé.</p>
+            <form id="accessory-filter-reserve" class="form-grid">
+              <label>
+                Mot-clé ID
+                <input name="query" placeholder="ACC-" />
+              </label>
+              <button class="button button-secondary" type="submit">Filtrer</button>
+            </form>
+            <form id="link-accessory-reserve" class="form-grid">
+              <label>
+                Accessoire
+                <input name="accessoryId" list="accessories-list-reserve" placeholder="ACC-0001" />
+                <datalist id="accessories-list-reserve" data-accessories-options></datalist>
+              </label>
+              <label>
+                Fauteuil (ID)
+                <input name="chairId" list="chairs-list-reserve" placeholder="SECH-0001" required />
+                <datalist id="chairs-list-reserve" data-chairs-options></datalist>
+              </label>
+              <button class="button button-secondary" type="submit">Associer</button>
+            </form>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Identifiant</th>
+                    <th>Type</th>
+                    <th>État</th>
+                    <th>Lié à</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody data-accessories-table></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card is-hidden" data-role-only="admin,gestionnaire,stock">
+        <h2>Indicateurs</h2>
+        <div class="stats" id="stats"></div>
+        <div class="barcode">
+          <div class="barcode__label">Exemple de code-barres</div>
+          <div class="barcode__value" id="barcode-sample">SECH-0001</div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
